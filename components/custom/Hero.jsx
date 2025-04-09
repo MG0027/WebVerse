@@ -52,7 +52,8 @@ function Hero() {
   };
 
   return (
-    <div className='flex flex-col items-center nt-36 xl:mt-42 gap-2 justify-items-center pl-100'>
+    <div >
+    <div className='flex flex-col items-center mt-30 xl:mt-30 gap-2'>
       <h2 className='font-bold text-4xl'>{Lookup.HERO_HEADING}</h2>
       <p className='text-gray-400 font-medium'> {Lookup.HERO_DESC}</p>
       <div className='p-5 border rounded-xl max-w-2xl w-full mt-3' style={{backgroundColor:Colors.BACKGROUND}}>
@@ -68,6 +69,7 @@ function Hero() {
         {Lookup?.SUGGSTIONS.map((suggestion,index)=>(<h2 key={index} className='p-1 px-2 border rounded-full text-sm text-gray-500 hover:text-white cursor-pointer' onClick={()=>{handleSubmit(suggestion)}}>{suggestion}</h2>))}
       </div>
       <LoginDialog openDialog={openDialog} closeDialog={(v)=>{setOpenDialog(false)}}/>
+    </div>
     </div>
   )
 }

@@ -47,9 +47,14 @@ function Header() {
     router.push('/');
   };
 
+  
+    const handleClick = () => {
+      router.push('/')
+    }
+
   return (
     <div className='p-4 flex justify-between items-center'>
-      <h1 className='text-2xl font-extrabold tracking-wide'>W</h1>
+      <h1 className='text-2xl font-extrabold tracking-wide cursor-pointer' onClick={handleClick}>W</h1>
       <div className='flex gap-5'>
         {isLoggedIn ? (
           <Button variant='ghost' onClick={handleLogout}>Log Out</Button>

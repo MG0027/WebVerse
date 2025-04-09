@@ -17,10 +17,10 @@ function Provider({children}) {
       store.dispatch(signIn(JSON.parse(storedUser)));
     }
   }, []);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   return (
    
-    <div>
+    <div >
       <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_LOGIN_API}>
        <ReduxProvider store={store}>
       <NextThemesProvider
@@ -39,7 +39,10 @@ function Provider({children}) {
         {sidebarOpen ? <div className="fixed top-5 left-52 z-50  text-white rounded-full shadow-lg"><X size={25} /> </div>: <div  className="absolute top-30 left-4 z-50  text-white rounded-full shadow-lg"><Menu size={25} /> </div>}
 
       </button>
-          {children}
+      <main className="flex-1 flex justify-center items-center">
+    {children}
+  </main>
+
          
          </SidebarProvider>
          </NextThemesProvider>
