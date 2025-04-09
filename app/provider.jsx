@@ -17,7 +17,7 @@ function Provider({children}) {
       store.dispatch(signIn(JSON.parse(storedUser)));
     }
   }, []);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
    
     <div>
