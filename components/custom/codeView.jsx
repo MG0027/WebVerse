@@ -70,7 +70,8 @@ useEffect(() => {
 
   const GenerateAiCode = async () => {
     try {
-      const PROMPT = JSON.stringify(messages) + Prompt.CODE_GEN_PROMPT;
+     const PROMPT = messages.map(m => `${m.role.toUpperCase()}: ${m.message}`).join('\n') + '\n' + Prompt.CODE_GEN_PROMPT;
+
       
       // Get AI-generated code
       const result = await axios.post('/api/gen-ai-code', {
