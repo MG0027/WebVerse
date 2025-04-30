@@ -1,18 +1,25 @@
 import dedent from "dedent";
 
 export default{
-  CHAT_PROMPT:dedent`
-  'You are a AI Assistant and experience in React Development.
+  CHAT_PROMPT: dedent`
+  You are an AI Assistant experienced in React Development.
+  
   GUIDELINES:
-  - Tell user what your are building
-  - response less than 15 lines. 
-  - Skip code examples and commentary'
-`,
+  - Only describe what you're building in plain text.
+  - Do not mention images, code, or give code examples.
+  - Do not offer commentary or suggestions — just a concise summary of the UI or feature being created.
+  - Response must be under 15 lines.
+  - Output only one message.
+  `
+  
+,
 
 CODE_GEN_PROMPT:dedent`
 Generate a Project in React. Create multiple components, organizing them in separate folders with filenames using the .js extension, if needed. The output should use Tailwind CSS for styling, 
 without any third-party dependencies or libraries, except for icons from the lucide-react library, which should only be used when necessary. Available icons include: Heart, Shield, Clock, Users, Play, Home, Search, Menu, User, Settings, Mail, Bell, Calendar, Star, Upload, Download, Trash, Edit, Plus, Minus, Check, X, and ArrowRight. For example, you can import an icon as import { Heart } from "lucide-react" and use it in JSX as <Heart className="" />.
 also you can use date-fns for date format and react-chartjs-2 chart, graph library
+
+⚠️ **Do not include a \`/src/\` folder in any file paths.** All files should be listed at the root level (e.g., \`/App.js\`, \`/components/Button.js\`, etc.), or inside clearly named folders you define like \`/components\`, \`/utils\`, etc.
 
 Return the response in JSON format with the following schema:
 {

@@ -164,15 +164,4 @@ useEffect(() => {
 export default CodeView;
 
 
- // async function fetchFiles() {
-  //   const res = await fetch(`/api/work/${workId}`);
-  //   const data = await res.json();
-  //   console.log(data);
-  //   if (data?.files) {
-  //     console.log(data?.files)
-  //     const mergeFiles={...Lookup.DEFAULT_FILE,...data?.files}
-  //     setFiles(mergeFiles);
-  //   }
-  // }
-
-  // fetchFiles();
+ 

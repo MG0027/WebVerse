@@ -70,7 +70,7 @@ const dispatch = useDispatch();
   const GetAiRes = async (currentMessages) => {
     setLoading(true);
     try {
-      const PROMPT = JSON.stringify(currentMessages) + Prompt.CHAT_PROMPT;
+      const PROMPT = JSON.stringify(currentMessages) + "\n" + Prompt.CHAT_PROMPT;
       const res = await axios.post('/api/ai-chat', { prompt: PROMPT });
   
       const aiResponse = {
@@ -110,11 +110,12 @@ const dispatch = useDispatch();
             <ReactMarkdown className="flex flex-col">{msg?.message}</ReactMarkdown>
            
       </div>))}
-      {loading &&<div className="p-3 rounded-lg mb-2 flex gap-2 items-center" style={{backgroundColor:Colors.CHAT_BACKGROUND}}>
+     
+    </div>
+    {loading &&<div className="p-3 rounded-lg mb-2 flex gap-2 items-center" style={{backgroundColor:Colors.CHAT_BACKGROUND}}>
               <Loader2Icon className="animate-spin"/>
               <h2>Generating Response....</h2>
               </div>}
-    </div>
      <div className='p-5 border rounded-xl max-w-2xl w-full mt-3' style={{backgroundColor:Colors.BACKGROUND}}>
           <div className='flex gap-2'>
             <textarea value={userInput} placeholder={Lookup.INPUT_PLACEHOLDER} className='outline-none bg-transparent w-full h-32 max-h-56 resize-none' onChange={(event)=>setUserInput(event.target.value)}></textarea>
@@ -130,56 +131,4 @@ const dispatch = useDispatch();
 
 export default ChatView;
 
-    // <div className="flex flex-col gap-4 h-full p-4 overflow-y-auto">
-    //   <div className="flex-1 space-y-3 overflow-y-scroll max-h-[70vh] border rounded-md p-4">
-    //     {messages.length > 0 ? (
-    //       messages.map((msg, idx) => (
-    //         <div key={idx} className="bg-muted p-2 rounded-md shadow-sm">
-    //           <p className="text-sm">{msg?.message}</p>
-    //           <p className="text-xs text-gray-400">
-    //           {msg?.createdAt ? new Date(msg.createdAt).toLocaleTimeString() : ''}
-    //           </p>
-    //         </div>
-    //       ))
-    //     ) : (
-    //       <p className="text-muted-foreground">No messages yet.</p>
-    //     )}
-    //   </div>
-
-    //   {/* Chat input */}
-    //   <div className="flex gap-2 items-end mt-4">
-    //     <textarea
-    //       rows={2}
-    //       placeholder="Type your message..."
-    //       value={newMsg}
-    //       onChange={(e) => setNewMsg(e.target.value)}
-    //       className="flex-1 resize-none"
-    //     />
-    //     <Button onClick={handleSend}>
-    //       <SendHorizonal className="h-4 w-4" />
-    //     </Button>
-    //   </div>
-    // </div>
-
-    // const  handleSend = async () => {
-      //   if (!newMsg.trim()) return;
-    
-      //   const newMessage = {
-      //     message: newMsg,
-      //   };
-    
-      //   try {
-      //     console.log(newMessage);
-      //     const res = await axios.patch(`/api/work/${workId}`, {
-      //        input: newMsg,
-      //     });
-    
-      //     console.log(res.data.inputs);
-          
-      //     setMessages((prev) => [...prev, res.data.inputs.at(-1)]);
-      //     setNewMsg("");
-    
-      //   } catch (err) {
-      //     console.error("Error sending message:", err);
-      //   }
-      // };
+   
