@@ -16,8 +16,7 @@ function Hero() {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const user = useSelector((state) => state.auth.user);
-  console.log(user);
-
+ 
   const [openDialog, setOpenDialog] = useState(false);
   const handleSubmit = async (userInput) => {
     if(!isLoggedIn){
@@ -34,13 +33,13 @@ function Hero() {
       });
 
       const work = res.data;
-      console.log(work);
+    
       dispatch(setInput(userInput));
       router.push(`/work/${work.workId}`);
       const historyRes = await axios.get(`/api/work?userId=${user.uuid}`);
     const history = historyRes.data.data;
 
-    console.log("Fetched history:", history);
+   
 
     
     dispatch(addToWorkHistory(history));

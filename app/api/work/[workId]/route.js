@@ -14,7 +14,7 @@ export async function GET(req, { params }) {
 
     const work = await Work.findOne({ workId });
     const file = await File.findOne({ workId });
-    console.log(file?.filesData);
+   
     let files = {};
     if (file && file.filesData) {
       try {
@@ -65,7 +65,7 @@ export async function PATCH(req, { params }) {
 
     // 2. Handle files in File model
     if (body.files && typeof body.files === "object") {
-      console.log("Files object received:", JSON.stringify(body.files, null, 2));
+     
       
       // Simply stringify the entire files object
       const filesString = JSON.stringify(body.files);
@@ -76,7 +76,7 @@ export async function PATCH(req, { params }) {
         { upsert: true, new: true, runValidators: false }
       );
 
-      console.log("Updated document:", updatedFile);
+    
 
   return Response.json({
     message: "Files data saved successfully.",
@@ -98,8 +98,7 @@ export async function POST(req, { params }) {
   const { workId } = params;
   const body = await req.json();
   const { files } = body;
-  console.log("Request body:", body);
-
+ 
   try {
     await connectToDatabase();
     const existingWork = await Work.findOne({ workId });
@@ -110,9 +109,9 @@ export async function POST(req, { params }) {
         const plainFiles = { ...files }; // assuming files is already a plain object
 existingWork.files = plainFiles;
         
-        console.log('existingWork:', existingWork.files);
+        
         const savedDoc = await existingWork.save();
-        console.log("Document after save:", JSON.stringify(savedDoc, null, 2));
+        
       
       } catch (e) {
         console.error('Error saving document:', e);
@@ -121,14 +120,13 @@ existingWork.files = plainFiles;
     } else {
       try {
         const newDoc = await Work.create({ workId, files });
-        console.log('Newly created doc:', newDoc);
+      
       } catch (e) {
         console.error('Error creating document:', e);
         return new Response(JSON.stringify({ error: "Error creating document" }), { status: 500 });
       }
     }
     
-    // Return a successful response at the end
     return new Response(JSON.stringify({ success: true }), { status: 200 });
     
   } catch (err) {

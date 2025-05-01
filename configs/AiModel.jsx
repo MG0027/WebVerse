@@ -19,7 +19,7 @@ const generationConfig = {
   topK: 40,
   maxOutputTokens: 1024,
   responseModalities: [
-    "image",
+    
     "text",
   ],
   responseMimeType: "text/plain",
@@ -29,7 +29,7 @@ const CodeGenerationConfig = {
   temperature: 1,
   topP: 0.95,
   topK: 40,
-  maxOutputTokens: 2048,
+  maxOutputTokens: 8192,
   responseMimeType: "application/json",
 };
 

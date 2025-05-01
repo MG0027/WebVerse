@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   SandpackProvider,
   SandpackLayout,
@@ -14,7 +14,7 @@ import axios from "axios";
 import { useParams } from 'next/navigation';
 import SandpackPreviewClient from "./SandpackPreviewClient";
 import { Button } from "../ui/button";
-import { LucideDownload, Rocket } from "lucide-react";
+import { Loader2Icon, LucideDownload, Rocket } from "lucide-react";
 import { setActivity } from "@/store/activitySlice";
 
 function CodeView() {
@@ -23,6 +23,7 @@ function CodeView() {
   const messages = useSelector((state) => state.chat.messages);
   const [previewKey, setPreviewKey] = useState(0);
   const dispatch = useDispatch();
+  const [codeLoading, setCodeLoading] = useState(false);
 
 
 
@@ -44,7 +45,7 @@ useEffect(() => {
       const res = await axios.get(`/api/work/${workId}`);
       const data = res.data;
   
-      console.log(data);
+      
   
       if (data.files) {
         const mergeFiles = { ...Lookup.DEFAULT_FILE, ...data.files };
@@ -59,54 +60,67 @@ useEffect(() => {
 
   fetchFiles();
 }, [workId]);
-  useEffect(()=>{
-    if(messages?.length>0){
-      const role=messages[messages?.length-1].role;
-      if(role=='user'){
-        GenerateAiCode();
-      }
+const triggeredRef = useRef(false);
+
+useEffect(() => {
+  
+  if (messages?.length > 0) {
+    const lastMessage = messages[messages.length - 1];
+    
+    if (lastMessage.role === 'user' && !triggeredRef.current) {
+      
+      triggeredRef.current = true;
+      GenerateAiCode();
     }
-  })
+
+    if (lastMessage.role === 'ai') {
+      triggeredRef.current = false; 
+      
+    }
+  }
+}, [messages]);
+
 
   const GenerateAiCode = async () => {
+    setCodeLoading(true);
+    
+    await new Promise(resolve => setTimeout(resolve, 3000)); 
     try {
      const PROMPT = messages.map(m => `${m.role.toUpperCase()}: ${m.message}`).join('\n') + '\n' + Prompt.CODE_GEN_PROMPT;
 
       
-      // Get AI-generated code
+  
       const result = await axios.post('/api/gen-ai-code', {
         prompt: PROMPT,
       });
       
-      console.log("AI Response received:", result.data);
+      
       const aiResp = result.data;
       
-      // Check if files exist in the response
+    
       if (aiResp?.files && Object.keys(aiResp.files).length > 0) {
-        console.log("Original files format:", aiResp.files);
+       
         
         
         
         
         
-        // Update UI
+      
         const mergeFiles = { ...Lookup.DEFAULT_FILE, ...aiResp.files };
         setFiles(mergeFiles);
         
         try {
-          // Send processed files to database
+         
           
           const patchRes = await axios.patch(`/api/work/${workId}`, {
             files: aiResp?.files,
           });
           
-          console.log("PATCH Response:", patchRes.data);
           
-          // Wait a moment then verify data was stored
           setTimeout(async () => {
             try {
               const verifyRes = await axios.get(`/api/work/${workId}`);
-              console.log("Verification GET response:", verifyRes.data);
+             
             } catch (verifyErr) {
               console.error("Verification GET failed:", verifyErr);
             }
@@ -118,7 +132,15 @@ useEffect(() => {
         console.warn("No files received from AI or empty files object");
       }
     } catch (error) {
-      console.error("GenerateAiCode Error:", error.response?.data || error.message);
+      const status = error?.response?.status;
+    if (status === 503) {
+      alert("The AI service is currently unavailable (503). Please try again shortly.");
+    } else {
+      console.error("GenerateAiCode Error:", error?.response?.data || error.message);
+    }
+    }
+    finally {
+      setCodeLoading(false); // stop loading
     }
   };
   
@@ -139,6 +161,12 @@ useEffect(() => {
         <Button variant='ghost'className='rounded-full'onClick={() => handleTrigger('deploy')}><Rocket></Rocket>Deploy</Button>
       </div>}
      </div>
+     {codeLoading ? (
+  <div className="h-[80vh] flex items-center justify-center text-white text-lg">
+    <Loader2Icon className="animate-spin pr-1"/>
+     Generating your project...
+  </div>
+) : (
       <SandpackProvider key={previewKey} files={files} template="react" theme={"dark"} customSetup={{
         dependencies:{
           ...Lookup.DEPENDANCY
@@ -158,6 +186,7 @@ useEffect(() => {
           </>}
         </SandpackLayout>
       </SandpackProvider>
+      )}
     </div>
   );
 }

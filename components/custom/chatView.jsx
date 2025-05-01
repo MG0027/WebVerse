@@ -26,7 +26,7 @@ const dispatch = useDispatch();
     const fetchMessages = async () => {
       try {
         const res = await axios.get(`/api/work/${workId}`);
-        console.log(res.data.inputs);
+        
         dispatch(setMessages(res.data.inputs))
         if (res.data.inputs.length === 1 && res.data.inputs[0].role === 'user') {
           GetAiRes(res.data.inputs[0].message);
@@ -42,7 +42,7 @@ const dispatch = useDispatch();
 
  
   
-  console.log(messages);
+  
 
   const handleSubmit = async (input) => {
     dispatch(addMessage({
@@ -59,7 +59,7 @@ const dispatch = useDispatch();
       await axios.patch(`/api/work/${workId}`, {
         input: newUserMessage,
       });
-      console.log(input);
+      
       GetAiRes(input);
     } catch (err) {
       console.error("Failed to store user message:", err);
@@ -81,7 +81,7 @@ const dispatch = useDispatch();
         role: 'ai',
         message: res.data.result,
       }));
-      // Save AI response to DB
+      
       await axios.patch(`/api/work/${workId}`, {
         input: aiResponse,
       });
