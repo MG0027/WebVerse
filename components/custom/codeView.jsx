@@ -16,6 +16,7 @@ import SandpackPreviewClient from "./SandpackPreviewClient";
 import { Button } from "../ui/button";
 import { Loader2Icon, LucideDownload, Rocket } from "lucide-react";
 import { setActivity } from "@/store/activitySlice";
+import { queueApiRequest, getQueueStatus } from '@/lib/apiQueue';
 
 function CodeView() {
   const [activeTab, setActiveTab]=useState('code');
@@ -24,28 +25,26 @@ function CodeView() {
   const [previewKey, setPreviewKey] = useState(0);
   const dispatch = useDispatch();
   const [codeLoading, setCodeLoading] = useState(false);
+  const [lastRequestTime, setLastRequestTime] = useState(0);
+  const [requestQueue, setRequestQueue] = useState(false);
+  
+  const MIN_REQUEST_INTERVAL = 5000; // 5 seconds minimum between requests
 
-
-
-    const handleTrigger = (name) => {
-      dispatch(setActivity({
-        action: name, // e.g., 'ex'
-        date: new Date().toISOString()
-      }));
-    };
+  const handleTrigger = (name) => {
+    dispatch(setActivity({
+      action: name, // e.g., 'ex'
+      date: new Date().toISOString()
+    }));
+  };
  
 const params = useParams();
 const workId = params.workId;
 
-
 useEffect(() => {
- 
   const fetchFiles = async () => {
     try {
       const res = await axios.get(`/api/work/${workId}`);
       const data = res.data;
-  
-      
   
       if (data.files) {
         const mergeFiles = { ...Lookup.DEFAULT_FILE, ...data.files };
@@ -56,71 +55,57 @@ useEffect(() => {
     }
   };
   
-  
-
   fetchFiles();
 }, [workId]);
+
 const triggeredRef = useRef(false);
 
 useEffect(() => {
-  
   if (messages?.length > 0) {
     const lastMessage = messages[messages.length - 1];
     
     if (lastMessage.role === 'user' && !triggeredRef.current) {
-      
       triggeredRef.current = true;
       GenerateAiCode();
     }
 
     if (lastMessage.role === 'ai') {
       triggeredRef.current = false; 
-      
     }
   }
 }, [messages]);
 
-
-  const GenerateAiCode = async () => {
+  const GenerateAiCode = async (retryCount = 0) => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 2000; // 2 seconds base delay
+    
     setCodeLoading(true);
     
     await new Promise(resolve => setTimeout(resolve, 3000)); 
     try {
      const PROMPT = messages.map(m => `${m.role.toUpperCase()}: ${m.message}`).join('\n') + '\n' + Prompt.CODE_GEN_PROMPT;
 
-      
-  
-      const result = await axios.post('/api/gen-ai-code', {
-        prompt: PROMPT,
-      });
-      
+      // Queue the API request
+      const result = await queueApiRequest(async () => {
+        return axios.post('/api/gen-ai-code', {
+          prompt: PROMPT,
+        });
+      }, 1); // High priority
       
       const aiResp = result.data;
       
-    
       if (aiResp?.files && Object.keys(aiResp.files).length > 0) {
-       
-        
-        
-        
-        
-        
-      
         const mergeFiles = { ...Lookup.DEFAULT_FILE, ...aiResp.files };
         setFiles(mergeFiles);
         
         try {
-         
-          
           const patchRes = await axios.patch(`/api/work/${workId}`, {
             files: aiResp?.files,
           });
           
-          
           setTimeout(async () => {
             try {
               const verifyRes = await axios.get(`/api/work/${workId}`);
-             
             } catch (verifyErr) {
               console.error("Verification GET failed:", verifyErr);
             }
@@ -132,15 +117,35 @@ useEffect(() => {
         console.warn("No files received from AI or empty files object");
       }
     } catch (error) {
+      const errorData = error?.response?.data;
       const status = error?.response?.status;
-    if (status === 503) {
-      alert("The AI service is currently unavailable (503). Please try again shortly.");
-    } else {
-      console.error("GenerateAiCode Error:", error?.response?.data || error.message);
-    }
+      
+      // Handle different error types
+      if (errorData?.errorType === 'OVERLOADED' || status === 503) {
+        if (retryCount < MAX_RETRIES) {
+          const retryDelay = errorData?.retryAfter || (RETRY_DELAY * Math.pow(2, retryCount));
+          console.log(`Service overloaded, retrying in ${retryDelay}ms... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          
+          setTimeout(() => {
+            GenerateAiCode(retryCount + 1);
+          }, retryDelay);
+          return; // Don't set loading to false yet
+        } else {
+          alert("The AI service is currently overloaded and all retry attempts failed. Please try again in a few minutes.");
+        }
+      } else if (errorData?.errorType === 'QUOTA_EXCEEDED' || status === 429) {
+        alert("API quota exceeded. Please try again later.");
+      } else if (errorData?.errorType === 'AUTH_ERROR' || status === 401) {
+        alert("Authentication failed. Please check your API key configuration.");
+      } else {
+        const errorMessage = errorData?.error || error.message || "An unexpected error occurred";
+        console.error("GenerateAiCode Error:", errorMessage);
+        alert(`Error: ${errorMessage}`);
+      }
     }
     finally {
       setCodeLoading(false); // stop loading
+      setRequestQueue(false); // clear queue
     }
   };
   
